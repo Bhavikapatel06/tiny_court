@@ -1,0 +1,99 @@
+:root {
+  --gold: #c9a84c;
+  --gold-light: #f0d080;
+  --gold-dark: #9a7a2f;
+  --bg-dark: #0a0a0f;
+  --bg-card: #111118;
+  --bg-panel: #16161f;
+  --bg-input: #1c1c28;
+  --border: rgba(201, 168, 76, 0.2);
+  --border-hover: rgba(201, 168, 76, 0.5);
+  --text-primary: #f0ede0;
+  --text-secondary: #a09880;
+  --text-muted: #5a5550;
+  --prosecution: #e05252;
+  --prosecution-bg: rgba(224, 82, 82, 0.1);
+  --defense: #52a0e0;
+  --defense-bg: rgba(82, 160, 224, 0.1);
+  --verdict-guilty: #e05252;
+  --verdict-innocent: #52d68a;
+  --verdict-insufficient: #e0a052;
+  --verdict-civil: #a052e0;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --shadow-gold: 0 0 30px rgba(201,168,76,0.15);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes gavel {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-30deg) translateY(-4px); }
+  60% { transform: rotate(5deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.1); }
+  50% { box-shadow: 0 0 40px rgba(201,168,76,0.3); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease forwards;
+}

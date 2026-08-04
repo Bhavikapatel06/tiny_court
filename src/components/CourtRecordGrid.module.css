@@ -1,0 +1,121 @@
+.container {
+  position: relative;
+  background: #fbf7ee;
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #2c2523;
+  margin-bottom: 20px;
+  border: 1px solid #eae2d0;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #3b2719;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* Rubber stamp circle - TINY COURT CERTIFIED */
+.stampCircle {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #a67c52;
+  border-radius: 50%;
+  padding: 3px;
+  transform: rotate(-12deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  box-shadow: inset 0 0 0 1px #a67c52;
+  user-select: none;
+}
+
+.stampInner {
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid #a67c52;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.55rem;
+  font-weight: 900;
+  color: #8c6035;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.card {
+  background: #fdfbf7;
+  border: 1px dashed #d9ceb9;
+  border-radius: 8px;
+  padding: 14px 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+}
+
+.cardFull {
+  grid-column: span 2;
+}
+
+.cardLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #8c7f70;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.cardValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #2b221a;
+  line-height: 1.35;
+}
+
+.cardQuote {
+  font-size: 1.05rem;
+  font-weight: 600;
+  font-style: italic;
+  color: #4a3c31;
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .cardFull {
+    grid-column: span 1;
+  }
+  .title {
+    font-size: 1.75rem;
+  }
+}
