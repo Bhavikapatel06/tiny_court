@@ -11,16 +11,18 @@ import {
   makeObjectionPrompt,
   makePleaPrompt,
   makeClosingPrompt
-} from './api.js';
-import { runSimulationStep } from './simulation.js';
-import Header from './components/Header.jsx';
-import WelcomeScreen from './components/WelcomeScreen.jsx';
-import MessageBubble from './components/MessageBubble.jsx';
-import TypingIndicator from './components/TypingIndicator.jsx';
-import ChatInput from './components/ChatInput.jsx';
-import SidebarPanels from './components/SidebarPanels.jsx';
-import VerdictCard from './components/VerdictCard.jsx';
-import ActionBar from './components/ActionBar.jsx';
+} from './engine/api.js';
+import { runSimulationStep } from './engine/simulation.js';
+import Header from './components/common/Header.jsx';
+import ApiKeyModal from './components/common/ApiKeyModal.jsx';
+import WelcomeScreen from './components/welcome/WelcomeScreen.jsx';
+import MessageBubble from './components/courtroom/MessageBubble.jsx';
+import TypingIndicator from './components/courtroom/TypingIndicator.jsx';
+import ChatInput from './components/courtroom/ChatInput.jsx';
+import SidebarPanels from './components/courtroom/SidebarPanels.jsx';
+import VerdictModal from './components/verdict/VerdictModal.jsx';
+import VerdictCard from './components/verdict/VerdictCard.jsx';
+import ActionBar from './components/verdict/ActionBar.jsx';
 import styles from './App.module.css';
 
 const STORAGE_KEY_API = 'minicourt_apikey_v3';
@@ -68,6 +70,7 @@ export default function App() {
   const [mode, setMode] = useState(() => localStorage.getItem(STORAGE_KEY_MODE) || 'simulation');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(STORAGE_KEY_API) || '');
   const [showApiModal, setShowApiModal] = useState(false);
+  const [showVerdictModal, setShowVerdictModal] = useState(false);
   const [trial, setTrial] = useState({ ...INITIAL_TRIAL });
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,9 +112,10 @@ export default function App() {
     setTrial({ ...INITIAL_TRIAL, meters: { ...INITIAL_METERS }, evidence: [], witnesses: [], timeline: { ...INITIAL_TRIAL.timeline } });
     setMessages([]);
     setError(null);
+    setShowVerdictModal(false);
   }, []);
 
-  // Save resolved case to local history
+  // Save resolved case to local history and MongoDB Atlas
   const archiveCase = useCallback((completedState, caseMessages) => {
     const archiveRecord = {
       id: Date.now().toString(),
@@ -149,6 +153,23 @@ export default function App() {
       localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(nextHistory));
       return nextHistory;
     });
+
+    // Also persist to MongoDB Atlas
+    fetch('/api/cases', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        caseTitle: completedState.caseTitle || 'Petty Household Dispute',
+        complaint: completedState.complaint,
+        caseType: completedState.caseType || 'Theft',
+        accused: completedState.accused || 'Roommate',
+        verdict: completedState.verdictLabel || completedState.verdict || 'GUILTY',
+        sentence: completedState.sentence || 'Community Service',
+        courtMood: completedState.courtMood || 'Dramatic',
+        tags: [completedState.caseType, 'User Dispute'],
+        icon: '⚖️'
+      })
+    }).catch(err => console.warn('Could not post case to MongoDB Atlas:', err));
   }, []);
 
   // Reload history case
@@ -182,6 +203,9 @@ export default function App() {
     });
     setMessages(pastCase.messages || []);
     setError(null);
+    if (pastCase.phase === 'verdict') {
+      setShowVerdictModal(true);
+    }
   }, []);
 
   // Engine Runner for Dynamic actions
@@ -199,11 +223,6 @@ export default function App() {
       if (mode === 'simulation') {
         const result = runSimulationStep(trial, action, userText);
         
-        // Append user bubble
-        if (userText && action !== 'open_case' && action !== 'name_suspect' && action !== 'submit_evidence') {
-          setMessages(prev => [...prev, { role: 'user', content: userText }]);
-        }
-
         const parsed = parseDelimited(result.responseText);
         const sections = mapKvToSections(parsed.prose, parsed.kv, action === 'ask_judge');
 
@@ -233,8 +252,9 @@ export default function App() {
         setMessages(nextMessages);
         setTrial(result.state);
 
-        // Archive if verdict delivered
+        // Archive & trigger verdict popup if verdict delivered
         if (action === 'ask_judge') {
+          setShowVerdictModal(true);
           archiveCase(result.state, nextMessages);
         }
       } else {
@@ -337,6 +357,7 @@ Meters: Suspicion ${trial.meters.suspicion}%, Evidence ${trial.meters.evidence}%
         setTrial(nextState);
 
         if (action === 'ask_judge') {
+          setShowVerdictModal(true);
           archiveCase(nextState, nextMessages);
         }
       }
@@ -493,14 +514,15 @@ Settle petty household crimes with Mini Court.`;
     if (isLoading) return [];
     if (trial.phase === 'verdict') {
       const chips = [
+        { key: 'view_cards',       icon: '📜', label: 'View Verdict Cards', primary: true },
         { key: 'appeal_leniency',  icon: '💖', label: 'Appeal: Leniency' },
         { key: 'appeal_evidence',  icon: '📂', label: 'Appeal: Evidence' },
         { key: 'appeal_innocent',  icon: '🛡️', label: 'Appeal: Innocent' },
         { key: 'copy_verdict',     icon: '🔗', label: 'Copy Verdict' },
-        { key: 'new_case',         icon: '➕', label: 'New Case', primary: true },
+        { key: 'new_case',         icon: '➕', label: 'New Case' },
       ];
       if (!trial.completedSentence && trial.verdict === 'GUILTY') {
-        chips.unshift({ key: 'mark_served', icon: '🧹', label: 'Mark Served', primary: true });
+        chips.unshift({ key: 'mark_served', icon: '🧹', label: 'Mark Served' });
       }
       return chips;
     }
@@ -522,6 +544,7 @@ Settle petty household crimes with Mini Court.`;
 
   const handleChipAction = (key) => {
     switch (key) {
+      case 'view_cards':     setShowVerdictModal(true); break;
       case 'add_evidence':   setTrial(prev => ({ ...prev, focus: 'evidence' })); break;
       case 'name_suspect':   setTrial(prev => ({ ...prev, focus: 'suspect' })); break;
       case 'call_witness':   runStep('call_witness'); break;
@@ -584,18 +607,6 @@ Settle petty household crimes with Mini Court.`;
                 />
               ))}
 
-              {/* High-Fidelity Verdict Card & Court Record View */}
-              {trial.phase === 'verdict' && (
-                <div style={{ marginTop: '24px' }}>
-                  <VerdictCard trial={trial} />
-                  <ActionBar
-                    trial={trial}
-                    onNewCase={handleReset}
-                    onServedToggle={handleServedSentence}
-                  />
-                </div>
-              )}
-
               {isLoading && <TypingIndicator />}
 
               {error && (
@@ -634,35 +645,23 @@ Settle petty household crimes with Mini Court.`;
         )}
       </main>
 
+      {/* ── Verdict Cards Popup Modal (Card 1 ➔ Card 2 Flow) ── */}
+      {showVerdictModal && (
+        <VerdictModal
+          trial={trial}
+          onNewCase={handleReset}
+          onServedToggle={handleServedSentence}
+          onClose={() => setShowVerdictModal(false)}
+        />
+      )}
+
       {/* API Key Modal */}
       {showApiModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h3>🔑 Enter Gemini API Key</h3>
-            <p className={styles.modalNote}>
-              Required for <strong>Gemini AI Mode</strong>. Get a free key from the{' '}
-              <a href="https://ai.google.dev/" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
-            </p>
-            <input
-              type="password"
-              className={styles.modalInput}
-              placeholder="AIzaSy..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
-            <div className={styles.modalBtns}>
-              <button onClick={() => handleSaveApiKey(apiKey)} className={styles.modalSaveBtn}>
-                Save & Connect
-              </button>
-              <button
-                onClick={() => { setMode('simulation'); setShowApiModal(false); }}
-                className={styles.modalCancelBtn}
-              >
-                Use Offline Simulation
-              </button>
-            </div>
-          </div>
-        </div>
+        <ApiKeyModal
+          apiKey={apiKey}
+          onSave={handleSaveApiKey}
+          onCancel={() => { setMode('simulation'); setShowApiModal(false); }}
+        />
       )}
     </div>
   );

@@ -7,7 +7,6 @@ export default function ActionBar({ trial, onNewCase, onServedToggle }) {
   const [isSaving, setIsSaving] = useState(false);
   const isServed = trial.completedSentence;
 
-  // 1. Copy Verdict Summary to Clipboard
   const handleCopy = () => {
     const text = `⚖️ TINY COURT RECORD ⚖️
 Case: ${trial.caseTitle || 'The People vs. The Suspect'}
@@ -24,7 +23,6 @@ Settle petty household crimes with Tiny Court!`;
     });
   };
 
-  // 2. Export Card as High-Res PNG Image (Zero dependency SVG -> Canvas rasterizer)
   const handleSaveImage = async () => {
     setIsSaving(true);
     try {
@@ -35,7 +33,6 @@ Settle petty household crimes with Tiny Court!`;
         return;
       }
 
-      // Clone element HTML and inline computed styles
       const width = cardElem.offsetWidth || 800;
       const height = cardElem.offsetHeight || 900;
 
@@ -56,7 +53,7 @@ Settle petty household crimes with Tiny Court!`;
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = width * 2; // 2x high dpi scale
+        canvas.width = width * 2;
         canvas.height = height * 2;
         const ctx = canvas.getContext('2d');
         ctx.scale(2, 2);
@@ -74,7 +71,6 @@ Settle petty household crimes with Tiny Court!`;
         setIsSaving(false);
       };
       img.onerror = () => {
-        // Fallback print/save prompt
         window.print();
         setIsSaving(false);
       };
@@ -85,7 +81,6 @@ Settle petty household crimes with Tiny Court!`;
     }
   };
 
-  // 3. Share URL / Native Share API
   const handleShare = () => {
     const shareData = {
       title: 'Tiny Court Verdict',

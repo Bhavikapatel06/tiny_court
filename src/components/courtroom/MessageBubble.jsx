@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { extractVerdictType, extractConfidence } from '../api.js';
+import { extractVerdictType, extractConfidence } from '../../engine/api.js';
 import styles from './MessageBubble.module.css';
 
 function renderMarkdown(text) {
@@ -16,7 +16,6 @@ function renderMarkdown(text) {
     .replace(/\n/g, '<br/>');
 }
 
-// Clean, inline verdict card
 function VerdictCard({ sections }) {
   const verdictType = useMemo(() => extractVerdictType(sections.VERDICT || ''), [sections.VERDICT]);
   const confidence = useMemo(() => extractConfidence(sections.VERDICT || ''), [sections.VERDICT]);
@@ -82,18 +81,13 @@ export default function MessageBubble({ message, actions, onAction }) {
 
   return (
     <div className={`${styles.wrap} ${isUser ? styles.userWrap : styles.aiWrap}`}>
-      {/* Avatar */}
       <div className={`${styles.avatar} ${role.avatarClass}`} title={role.label}>
         {role.icon}
       </div>
 
       <div className={styles.msgCol}>
-        {/* Role label */}
-        {!isUser && (
-          <span className={styles.roleName}>{role.label}</span>
-        )}
+        {!isUser && <span className={styles.roleName}>{role.label}</span>}
 
-        {/* Bubble */}
         <div className={`${styles.bubble} ${role.bubbleClass}`}>
           {isUser ? (
             <p className={styles.text}>{message.content}</p>
@@ -110,7 +104,6 @@ export default function MessageBubble({ message, actions, onAction }) {
           )}
         </div>
 
-        {/* Inline action chips — only on last AI message when actions provided */}
         {!isUser && actions && actions.length > 0 && (
           <div className={styles.chips}>
             {actions.map((a) => (

@@ -28,7 +28,6 @@
   user-select: none;
 }
 
-/* Red Copy Button */
 .btnCopy {
   background: #c83e38;
   color: #ffffff;
@@ -46,7 +45,6 @@
   transform: translateY(0);
 }
 
-/* Cream Buttons */
 .btnSecondary {
   background: #f6eedf;
   color: #3b2c24;
@@ -65,7 +63,6 @@
   transform: translateY(0);
 }
 
-/* Served Active state */
 .btnServedActive {
   background: #3e7b56;
   color: #ffffff;

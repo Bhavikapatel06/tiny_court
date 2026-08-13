@@ -1,8 +1,5 @@
-import { MODELS, DEFAULT_MODEL, SYSTEM_PROMPT } from './constants';
+import { MODELS, DEFAULT_MODEL, SYSTEM_PROMPT } from '../config/constants.js';
 
-/**
- * Send request to Gemini API and get a response.
- */
 export async function sendToGemini(messages, apiKey, model = 'gemini-2.0-flash') {
   const modelUrl = MODELS[model] || MODELS[DEFAULT_MODEL];
   
@@ -41,12 +38,8 @@ export async function sendToGemini(messages, apiKey, model = 'gemini-2.0-flash')
   return text;
 }
 
-/**
- * Parse Hugging Face style delimited key-value block
- */
 export function parseDelimited(text) {
   const parts = text.split('---');
-  // If there are multiple --- separators, prose is the first part, metadata is the last part
   const prose = parts[0].trim();
   const kvBlock = parts[parts.length - 1] || '';
   
@@ -61,7 +54,6 @@ export function parseDelimited(text) {
       const val = match[2].trim();
       kv[key] = val;
       
-      // Parse deltas
       if (key.endsWith('_DELTA')) {
         const deltaKey = key.replace('_DELTA', '').toLowerCase();
         const num = parseInt(val.replace('+', ''));
@@ -75,12 +67,6 @@ export function parseDelimited(text) {
   return { prose, kv, deltas };
 }
 
-/**
- * Maps the flat key-values to UI structured sections.
- * @param {string} prose - narrative text before the --- delimiter
- * @param {object} kv    - parsed key-value pairs after the --- delimiter
- * @param {boolean} showVerdict - only build the Verdict card when explicitly requested (e.g. ask_judge action)
- */
 export function mapKvToSections(prose, kv, showVerdict = false) {
   const sections = {};
   
@@ -88,12 +74,10 @@ export function mapKvToSections(prose, kv, showVerdict = false) {
     sections.prose = prose;
   }
   
-  // Extract role label
   if (kv.ROLE) {
     sections.role = kv.ROLE;
   }
   
-  // Only show structured verdict card when the Judge action fires
   if (showVerdict && (kv.VERDICT || kv.SENTENCE || kv.CONFIDENCE)) {
     sections.VERDICT = `**Verdict:** ${kv.VERDICT || 'CIVIL DISPUTE'}\n\n**Confidence Score:** ${kv.CONFIDENCE || 'Unknown'}\n\n**Reasoning:**\n${kv.REASON || ''}\n\n**Sentence:** ${kv.SENTENCE || 'None'}`;
   }
@@ -105,114 +89,83 @@ export function mapKvToSections(prose, kv, showVerdict = false) {
   return sections;
 }
 
-// Prompt builders for role-based gameplay
 export function makeCaseOpenPrompt(complaint, accused, caseType) {
   return `A citizen submits this Complaint:
 "${complaint}"
-Accused (named by user or default): "${accused || 'Unknown'}"
+Accused: "${accused || 'Unknown'}"
 Case Type: "${caseType || 'Theft'}"
 
-Open the case file. Respond as 🕵️‍♂️ Investigator. Acknowledge the incident and ask 3-4 friendly follow-up questions to gather key alibi details (where, when, witnesses).
+Open the case file as 🕵️‍♂️ Investigator. Perform detective reasoning, extract key facts (without echoing), and ask ONE single follow-up question.
 
 Return dialogue prose, then ---, then these KEYS:
 ROLE: Investigator
 SUSPICION_DELTA: +20
-EVIDENCE_DELTA: +10
-DIGNITY_DELTA: 0`;
+EVIDENCE_DELTA: +10`;
 }
 
 export function makeEvidencePrompt(summary, rawEvidence) {
-  return `Case Summary:
-${summary}
+  return `Case Summary: ${summary}
+New evidence: "${rawEvidence}"
 
-The complainant submitted new evidence: "${rawEvidence}"
+Acknowledge as 🕵️‍♂️ Investigator. Reason on how this physical clue impacts the timeline.
 
-Acknowledge this evidence as 🕵️‍♂️ Investigator. Write a short reaction, log it into the record, and tell the user how it strengthens the case.
-
-Return dialogue prose, then ---, then these KEYS:
+Return dialogue prose, then ---, then KEYS:
 ROLE: Investigator
-EVIDENCE_DELTA: +20
-SUSPICION_DELTA: +10
-DIGNITY_DELTA: -5`;
+EVIDENCE_DELTA: +20`;
 }
 
 export function makeWitnessPrompt(summary) {
-  return `Case Summary:
-${summary}
+  return `Case Summary: ${summary}
+Summon a witness as 👤 Witness. Provide humorous witness testimony.
 
-Summon a witness related to this incident. Speak in character as 👤 Witness. Provide a humorous or helpful witness testimony.
-
-Return dialogue prose, then ---, then these KEYS:
+Return dialogue prose, then ---, then KEYS:
 ROLE: Witness
-EVIDENCE_DELTA: +15
-SUSPICION_DELTA: +15
-DIGNITY_DELTA: -10`;
+EVIDENCE_DELTA: +15`;
 }
 
 export function makeCrossPrompt(summary) {
-  return `Case Summary:
-${summary}
+  return `Case Summary: ${summary}
+Cross-examine as 🛡️ Defense Lawyer. Challenge testimony.
 
-Cross-examine the witness as 🛡️ Defense Lawyer. Express skepticism, challenge the testimony, and point out a gap in the timeline.
-
-Return dialogue prose, then ---, then these KEYS:
-ROLE: Defense Lawyer
-SUSPICION_DELTA: -10
-EVIDENCE_DELTA: +10
-DIGNITY_DELTA: -5`;
+Return dialogue prose, then ---, then KEYS:
+ROLE: Defense Lawyer`;
 }
 
 export function makeTwistPrompt(summary) {
-  return `Case Summary:
-${summary}
+  return `Case Summary: ${summary}
+Announce a surprise twist as 🕵️‍♂️ Investigator.
 
-Announce a surprise twist complication as 🕵️‍♂️ Investigator (e.g. new CCTV clip, missing key item found in a weird place). Make it funny and specific.
-
-Return dialogue prose, then ---, then these KEYS:
-ROLE: Investigator
-SUSPICION_DELTA: +20
-EVIDENCE_DELTA: +15
-DIGNITY_DELTA: -15`;
+Return dialogue prose, then ---, then KEYS:
+ROLE: Investigator`;
 }
 
 export function makeObjectionPrompt(summary) {
-  return `Case Summary:
-${summary}
+  return `Case Summary: ${summary}
+Rulings as 👨‍⚖️ Judge. SUSTAINED or OVERRULED.
 
-A defense objection has been raised. Act as 👨‍⚖️ Judge. Deliver a ruling (SUSTAINED or OVERRULED) with a quick comedic justification.
-
-Return dialogue prose, then ---, then these KEYS:
-ROLE: Judge
-SUSPICION_DELTA: -10
-DIGNITY_DELTA: -10`;
+Return dialogue prose, then ---, then KEYS:
+ROLE: Judge`;
 }
 
 export function makePleaPrompt(summary, pleaText) {
-  return `Case Summary:
-${summary}
-Remorse plea from accused: "${pleaText}"
+  return `Case Summary: ${summary}
+Remorse plea: "${pleaText}"
+React as 👨‍⚖️ Judge showing mercy.
 
-React as 👨‍⚖️ Judge or 🛡️ Defense Lawyer. Deliver a brief reaction showing mercy or skepticism.
-
-Return dialogue prose, then ---, then these KEYS:
-ROLE: Judge
-MERCY_DELTA: +25
-DIGNITY_DELTA: -5`;
+Return dialogue prose, then ---, then KEYS:
+ROLE: Judge`;
 }
 
 export function makeClosingPrompt(summary, verdictBand) {
-  return `Case Summary:
-${summary}
-Verifying Verdict: The calculated verdict band is ${verdictBand}. Do not change it.
+  return `Case Summary: ${summary}
+Calculated verdict band: ${verdictBand}
 
-Act as 👨‍⚖️ Judge. Summarize the evidence checklist, review witness statements, and deliver a formal verdict, confidence score, reasons, and a funny sentence.
+Act as 👨‍⚖️ Judge. Deliver formal verdict, confidence score, reasons, and sentence.
 
-Return dialogue prose, then ---, then these KEYS:
+Return dialogue prose, then ---, then KEYS:
 ROLE: Judge
 VERDICT: ${verdictBand}
 CONFIDENCE: 90%
-REASON: (1-3 checklist bullets reasons)
-SENTENCE: (comedic sentence)
 `;
 }
 

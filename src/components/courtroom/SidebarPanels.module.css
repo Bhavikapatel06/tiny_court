@@ -1,0 +1,135 @@
+.sidebar {
+  background: #14131c;
+  border-left: 1px solid #2a283a;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+}
+
+.collapsed {
+  width: 50px;
+}
+
+.toggleBtn {
+  background: transparent;
+  border: none;
+  color: #a0a0b0;
+  padding: 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid #2a283a;
+}
+
+.inner {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  color: #f0d080;
+  margin-bottom: 10px;
+}
+
+.emptyText {
+  font-size: 0.8rem;
+  color: #808090;
+}
+
+.evidenceGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.evidenceCard {
+  background: #1c1a29;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #e0e0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meterWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meterText {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #a0a0b0;
+}
+
+.meterTrack {
+  height: 8px;
+  background: #2a283a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.meterFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.witnessList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.witnessTag {
+  background: #222030;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: #d0d0e0;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.historyCard {
+  background: #1c1a29;
+  border: 1px solid #2a283a;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+  color: #ffffff;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.historyDate {
+  font-size: 0.7rem;
+  color: #808090;
+}
+
+.historySub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #a0a0b0;
+  margin-top: 4px;
+}

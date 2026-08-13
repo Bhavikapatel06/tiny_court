@@ -16,7 +16,6 @@ export default function SidebarPanels({ evidence = [], witnesses = [], strength 
 
       {isOpen && (
         <div className={styles.inner}>
-          {/* Case Strength Meter */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>⚖️ Case Strength</h4>
             <div className={styles.meterWrap}>
@@ -33,11 +32,10 @@ export default function SidebarPanels({ evidence = [], witnesses = [], strength 
             </div>
           </div>
 
-          {/* Evidence Locker */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>🔒 Evidence Locker</h4>
             {evidence.length === 0 ? (
-              <p className={styles.emptyText}>No evidence logged yet. Use 'Add Evidence' to gather proof.</p>
+              <p className={styles.emptyText}>No evidence logged yet.</p>
             ) : (
               <div className={styles.evidenceGrid}>
                 {evidence.map((item, idx) => (
@@ -50,7 +48,6 @@ export default function SidebarPanels({ evidence = [], witnesses = [], strength 
             )}
           </div>
 
-          {/* Witnesses list */}
           {witnesses.length > 0 && (
             <div className={styles.section}>
               <h4 className={styles.sectionTitle}>👥 Witnesses Standing</h4>
@@ -64,7 +61,6 @@ export default function SidebarPanels({ evidence = [], witnesses = [], strength 
             </div>
           )}
 
-          {/* Case History */}
           <div className={styles.section}>
             <h4 className={styles.sectionTitle}>📜 Case Archive</h4>
             {history.length === 0 ? (
